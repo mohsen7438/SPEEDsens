@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speed Sensor App</title>
+<link rel="manifest" href="manifest.json">
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
+</script>
+<style>
+body {
+  background: #111;
+  color: #fff;
+  font-family: Arial;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+#speedGauge {
+  width: 300px;
+  height: 300px;
+  margin: 30px auto;
+  background: radial-gradient(circle, #222 40%, #111);
+  border: 8px solid #444;
+  border-radius: 50%;
+  position: relative;
+}
+.needle {
+  width: 4px;
+  height: 130px;
+  background: red;
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  transform: rotate(-90deg);
+  transition: transform 0.3s ease-in-out;
+}
+#speedText {
+  font-size: 40px;
+  margin-top: 20px;
+}
+button {
+  padding: 15px;
+  font-size: 18px;
+  background: #0f0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+<h1>Speed Sensor Dashboard</h1>
+<div id="speedGauge"><div class="needle" id="needle"></div></div>
+<div id="speedText">0 km/h</div>
+<button id="connectBtn">اتصال به سنسور</button>
+
+<script>
+let needle = document.getElementById('needle');
+let speedText = document.getElementById('speedText');
+let connectBtn = document.getElementById('connectBtn');
+
+function updateGauge(speed) {
+  let maxSpeed = 60;
+  if (speed > maxSpeed) speed = maxSpeed;
+  let angle = -90 + (speed / maxSpeed) * 180;
+  needle.style.transform = `rotate(${angle}deg)`;
+  speedText.innerText = speed.toFixed(1) + " km/h";
+}
+
+connectBtn.addEventListener('click', async () => {
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ name: 'ESP32-SpeedSensor' }],
+      optionalServices: ['12345678-1234-5678-1234-56789abcdef0']
+    });
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService('12345678-1234-5678-1234-56789abcdef0');
+    const characteristic = await service.getCharacteristic('abcdef01-1234-5678-1234-56789abcdef0');
+
+    await characteristic.startNotifications();
+    characteristic.addEventListener('characteristicvaluechanged', (event) => {
+      let value = new TextDecoder().decode(event.target.value);
+      let speed = parseFloat(value);
+      updateGauge(speed);
+    });
+    alert("اتصال برقرار شد!");
+  } catch (error) {
+    alert("خطا در اتصال: " + error);
+  }
+});
+</script>
+</body>
+</html>
