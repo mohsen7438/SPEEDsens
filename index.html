@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speed Sensor</title>
+<link rel="manifest" href="manifest.json">
+<style>
+body { text-align: center; font-family: Arial; background: #222; color: #fff; }
+canvas { display: block; margin: auto; }
+button { margin: 20px; padding: 15px; font-size: 18px; }
+#speed { font-size: 2em; margin-top: 10px; }
+</style>
+</head>
+<body>
+<h1>Speed Sensor</h1>
+<canvas id="gauge" width="300" height="300"></canvas>
+<div id="speed">0.0 km/h</div>
+<button onclick="connectBLE()">Connect Sensor</button>
+<script src="app.js"></script>
+</body>
+</html>
